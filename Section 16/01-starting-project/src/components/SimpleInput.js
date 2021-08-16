@@ -28,7 +28,7 @@ const SimpleInput = (props) => {
   let formIsValid = false;
 
   // Check if all the inputs are valid
-  if (enteredNameIsValid & enteredEmailIsValid) {
+  if (enteredNameIsValid && enteredEmailIsValid) {
     formIsValid = true;
   }
 
