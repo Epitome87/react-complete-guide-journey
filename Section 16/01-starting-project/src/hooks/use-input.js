@@ -44,14 +44,10 @@ const inputStateReducer = (previousState, action) => {
   switch (action.type) {
     case 'INPUT':
       return { value: action.value, isTouched: previousState.isTouched };
-      break;
     case 'BLUR':
       return { isTouched: true, value: previousState.value };
-      break;
     case 'RESET':
       return { value: '', isTouched: false };
-      break;
-
     default:
       return previousState;
   }
