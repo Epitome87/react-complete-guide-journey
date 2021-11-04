@@ -9,6 +9,8 @@ This is simply a place where I maintain all the projects I have created througho
 As I am taking multiple React courses at once, I have a rather conservative goal of completing Max's course by the end September
 8/12/21: As of my initial commit, I have 264/490 completed
 8/13/21: 284/490 lessons completed
+(Taking break to focus on pure HTML/CSS/JS front-end skills)
+11/02/21: Starting course again! 311/491 lesson completed!
 
 ## The Future Of This Project
 

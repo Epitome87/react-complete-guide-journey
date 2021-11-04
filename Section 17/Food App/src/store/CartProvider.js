@@ -55,6 +55,10 @@ const cartReducer = (state, action) => {
         totalAmount: updatedTotal,
       };
 
+    // Return default cart state (empty) when Cart should be cleared
+    case 'CLEAR':
+      return defaultCartState;
+
     default:
       return defaultCartState;
   }
@@ -71,8 +75,13 @@ function CartProvider(props) {
     console.log('IN CARTPROVIDER ADD', item);
     dispatchCartAction({ type: 'ADD', item: item });
   };
+
   const removeItemFromCartHandler = (id) => {
     dispatchCartAction({ type: 'REMOVE', id: id });
+  };
+
+  const clearCartHandler = () => {
+    dispatchCartAction({ type: 'CLEAR' });
   };
 
   const cartContext = {
@@ -80,6 +89,7 @@ function CartProvider(props) {
     totalAmount: cartState.totalAmount,
     addItem: addItemToCartHandler,
     removeItem: removeItemFromCartHandler,
+    clearCart: clearCartHandler,
   };
 
   return (
