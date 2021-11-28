@@ -779,6 +779,30 @@ Can then uninstall Redux, as the Redux Toolkit includes it!
 
 # Section 19: Advanced Redux
 
+### `Originally Started: 11/28/2021`
+
+## Module Introduction
+
+We'll cover more advanced Redux topics in this section, such as:
+
+- Handling Async Tasks with Redux
+- Where to Put Our Code
+- The Redux DevTools
+
+## Redux & Side Effects (and Asynchronous Code)
+
+Important rule
+
+- Reducer functions must be _pure_, _side-effect free_ and synchronous
+  - Applies to Redux reducers and React's useReducer hook
+- Input (old state + action) => Output (new state)
+
+When we dispatch an action that requires a side-effect / async task, where should we put that code then? If it can't go in the reducer function...
+
+- Directly inside the component (e.g useEffect(), only dispatch an action when that side-effect is done)
+- Inside our own **action creators**
+  - Redux has a solution that allows us to perform side-effects / async tasks as part of these action creators, without changing the reducer function
+
 # Section 20: Building a Multi-Page SPA w/ React Router
 
 # Section 21: Deploying React Apps
