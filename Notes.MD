@@ -604,11 +604,178 @@ And that's it for this section! We're now leveraging a backend for fetching our 
 
 # Section 18: Redux (An Alternative to the Context API)
 
+## Module Introduction
+
+- Understanding Redux
+  - Managing App-Wide State with Redux
+- What is Redux? Why use it?
+- Redux Basics & Using Redux with React
+- Redux Toolkit
+
+## Another Look At State in React Apps
+
+What is "Redux"?
+
+- A state management system for cross-component or app-wide state
+
+What is Cross-Component / App-Wide State?
+
+- We can split state into three types:
+
+  - Local State:
+    - State that belongs to a single component
+    - E.g listening to user input in an input field; toggling a "show more" details field
+    - Typically managed with useState / useReducer
+  - Cross-Component:
+    - State that affects multiple components
+    - E.g open / closed state of a modal overlay
+    - Requires "prop chains" / "prop drilling", managed with useState / useReducer
+    - Cumbersome, can use React Context to make more elegant
+  - App-Wide State
+    - State that affects the entire app (most / all components)
+    - E.g user authentication status, light/dark theme
+    - Can manage with useState / useReducer, and "prop chains" / "prop drilling"
+    - Cumbersome, can use React Context to make more elegant
+
+## Redux vs React Context
+
+Why Redux if we already have React Context?
+
 - Both Redux and React Context to help us manage cross-component and app-wide states: It gets messy and tedious passing up and down props/states! Redux makes state management simpler.
 - Can use both Context and Redux in single application (mix-and-match).
-- React Context - Potential Disadvantages: 1) Can have a complex setup -- managing this becomes difficult. Could end up with a lot of deeply-nested Context Providers. Or if you try to shove everything into one Context Provider, you end up with a large file that is responsible for far too much! 2) Performance - Context is really only optimized for low frequency unlikely updates (like locale/theme)
+- React Context can have potential disadvantages...
+  - 1. Can have a complex setup -- managing this becomes difficult. Could end up with a lot of deeply-nested Context Providers. Or if you try to shove everything into one Context Provider, you end up with a large file that is responsible for far too much!
+  - 2. Performance - Context is really only optimized for low frequency unlikely updates (like locale/theme)
 
-**NOTE 11/3/21** Due to my 2-month break from React, I may want to revisit Section 10 on the Context API before diving deeper into Section 18.
+## How Redux Works
+
+Core Redux Concepts
+
+- **One** Central Data (State) Store for entire application
+- Components set up **Subscriptions** to the central store
+  - Whenever data changes, the store notifies the components, who can then get the data they need (a slice) and use it accordingly
+
+How do we change data in the store?
+
+- Components **never** directly manipulate the store data!
+- Use a concept called **Reducers**
+  - **Reducer function** is responsible for mutating (changing) the store data
+    - Note this function is _not_ React's useReducer() Hook. Reducer function is a general concept
+- How do we connect components and that reducer function???
+  - We _trigger_ some data change with **Actions**
+  - Components _dispatch_ / _trigger_ actions, which describe what should be done
+- Actions are simple JS objects which describes the operation the reducer should perform
+  - Actions are forwarded to the reducer, reads that description of the desired operation, and that operation is performed by the reducer. Reducer spits out a new state to replace the existing state
+- Subscribing components are notified after this state change!
+
+## Exploring the Core Redux Concepts
+
+The Reducer Function
+
+- Standard JS function
+- Called by redux library
+- Two params: Old State + Dispatched Action
+- Must return a new state object
+- Should be a pure function (same inputs always produce same outputs, no side effects - no HTTP requests, fetch / write to local storage)
+
+```js
+const redux = require('redux');
+
+const counterReducer = (state = { counter: 0 }, action) => {
+  switch (action.type) {
+    case 'increment':
+      return {
+        counter: state.counter + 1,
+      };
+
+    default:
+      return state;
+  }
+};
+
+const store = redux.createStore(counterReducer);
+
+// Will run every time its alerted of a state change
+const counterSubscriber = () => {
+  const latestState = store.getState();
+};
+
+store.subscribe(counterSubscriber);
+
+setInterval(() => {
+  // counterSubscriber will run every 2 seconds
+  store.dispatch({ type: 'increment' });
+}, 2000);
+```
+
+## Preparing a new Project
+
+- Redux can be used in _any_ JavaScript project -- not just React!
+- Doesn't know anything about React -- or care!
+- To make working with Redux in React applications easier, we use a second package: **react-redux**
+  - Makes connecting React apps to Redux stores and reducers versy simple. Easy to subscribe components to Redux store
+  - Can install using `npm install react-redux`
+
+## Creating a Redux Store for React
+
+- Convention to store Redux related code in a src/store/ folder
+- We basically do every step as previous, except we do not call dispatch or subscribe -- we will have the Components handle that later
+
+## Providing the Store
+
+- Typically done in the index.js file
+
+```js
+// Index.js
+import { Provider } from 'react-redux';
+import store from './store/index';
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+);
+```
+
+- Now the store is provided to App and any other child components
+- They can tap into it, subscribe to it, dispatch actions, get data out of the store, etc
+
+## How to Work with Redux State Correctly
+
+- **Never** mutate the current state in a reducer!
+- It may look like it works properly, but it can have unwanted side-effects
+- Always return a brand new object where you copy any nested objects / arrays and create brand new values
+
+## Redux Challenges & Introducing Redux Toolkit
+
+- Potential to typo our action types
+  - Could create constants, or enum-type data structures in plain JavaScript to remedy this
+- The more data we manage, the bigger the state objects get. Means more copying of state when we update just a single piece of state
+  - Could split reducer into multiple smaller reducers
+  - Could use third party packages that allow you to automatically copy state and ensure you don't accidentally edit it
+- Respecting state immutability can be challenging
+
+To remedy all these potential issues, we can use the **Redux Toolkit** library.
+
+- Developed by the same team as React Redux and Redux
+- Extra package which makes working with Redux easier
+
+## Adding State Slices
+
+Installing **Redux Toolkit**
+
+Using Create React App
+
+- `npx create-react-app my-app --template redux` for Redux + Plain JS template
+- `npx create-react-app my-app --template redux-typescript` for Redux + TypeScript template
+
+In an Existing App
+
+- `npm install @reduxjs/toolkit`
+- `yard add @reduxjs/toolkit`
+
+Can then uninstall Redux, as the Redux Toolkit includes it!
 
 # Section 19: Advanced Redux
 
