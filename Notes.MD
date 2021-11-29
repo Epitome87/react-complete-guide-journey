@@ -1029,3 +1029,57 @@ npm run build
 ## Adding First Pages
 
 ## Adding Nested Paths & Pages (Nested Routes)
+
+# Section 24: Animating React Apps
+
+`Originally Started: 11/28/2021`
+
+## Module Introduction
+
+This section will cover Animating React Apps & Components
+
+- Adding Smooth Animations to our Apps
+- CSS Animations & Why They Are Sometiems Not Enough
+- Animating react Components with Extra Libraries
+
+A demo project will be provided for us. It uses Class-based Components instead of Functional (ew!)
+
+## Using ReactTransitionGroup
+
+Much like in Colt Steele's React course, we are going to make use of the third party package: ReactTransitionGroup!
+
+- Smoothly animate elements when they are added to and from the DOM
+- Install: `npm install react-transition-group --save`
+
+## Alternative Animation Packages
+
+**React-Motion** is also a popular animation package.
+
+- A little tougher to get started
+- More physics-based animations
+- Don't define durations: It tries its best to determine realistic timings
+
+**React-Move** is also a popular choice
+
+- Exposes two basic components
+- Always work with objects describing the state of an animation
+- Heavily influenced by ThreeJS transitions
+- Can help build more complex animations
+- Can animate groups, like bars on a graph
+
+**React-Router-Transition**
+
+- Easily create transitions between different routes!
+- Builds up on React-Motion
+- AnimatedSwitch component, which you replace your normal Router Switch with
+- Does what normal Switch does, but atEnter, atLeave, atActive, className properties
+- Animating Routes can be very tricky with other packages -- not-so-hard with this package!
+
+## Wrap Up
+
+- Animations can help guide user attention and provide a nice user experience
+- React-Transition-Group gives JavaScript layer to add in order to orchestrate your CSS animations
+- React-Motion if want a more CSS-independent solution. Emulates real-world physics
+
+`Section Completed: 11/29/2021`
+
