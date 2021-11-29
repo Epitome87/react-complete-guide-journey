@@ -803,6 +803,38 @@ When we dispatch an action that requires a side-effect / async task, where shoul
 - Inside our own **action creators**
   - Redux has a solution that allows us to perform side-effects / async tasks as part of these action creators, without changing the reducer function
 
+## Frontend Code vs Backend Code
+
+Frontend code depends on backend code
+Two possible approaches
+
+- 1. Backend API does a lot of work (i.e transform data + stores data). Frontend react App sends data & receives + use response (i.e less code on the frontend, ahead of the reducer)
+- 2. Backend API does very little work (i.e just stores incoming data). Frontend React App transforms data and sends data (i.e more code on the frontend, ahead of the reducer)
+
+Approach 2 is what we're doing so far -- in our cart reducers we aren't just getting the finished cart as the payload, we are getting parts and figuring out how to add it to the cart. Makes complete sense, since we have no backend yet. But now we need a way to still do this work in the reducer, and then send that transformed data to the backend, without doing that sending inside the reducer (since it has to be pure).
+
+## Where to Put Our Logic
+
+Fat Reducers vs Fat Components vs Fat Actions
+
+Where should our logic (Code) go?
+
+Differentiate between two types of code:
+
+- Synchronous, side-effect free code (i.e. data transformations)
+  - Typically, prefer Reducers. Avoid Action Creators or Components for this type of code.
+- Async code or code with side-effects
+  - Prefer Action Creators or Components
+  - **Never** use Reducers
+
+So if we extract the data-transformation code (for our Cart logic) out from the Redux store reducer file its currently in, and make it part of a React component itself, we are taking a suboptimical approach!
+
+Then how should we handle this? We need to prepare our cart data before we send it to Firebase, since we can't from inside the Reducer...
+
+## Using useEffect with Redux
+
+Nothing new here; use `useEffect()` to run some fetch request to our Firebase API any time the `cart` state has changed (retrieve using `useSelector()`). So every time we dispatch an event that alters the `cart` state, the `useEffect` will run, make a call to the Firebase API, and send it an object representation of the current Cart, which will be replaced in the database via a "PUT" request.
+
 # Section 20: Building a Multi-Page SPA w/ React Router
 
 # Section 21: Deploying React Apps
