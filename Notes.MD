@@ -835,6 +835,40 @@ Then how should we handle this? We need to prepare our cart data before we send 
 
 Nothing new here; use `useEffect()` to run some fetch request to our Firebase API any time the `cart` state has changed (retrieve using `useSelector()`). So every time we dispatch an event that alters the `cart` state, the `useEffect` will run, make a call to the Firebase API, and send it an object representation of the current Cart, which will be replaced in the database via a "PUT" request.
 
+## Using an Action Creator Thunk
+
+The second approach to having side-effects or async code in conjunction with Redux is to create our own Action Creator.
+
+What Is a "Thunk"?
+
+- A function that delays an action until later
+- An action creator function that does _not_ return the action itself, but another function which eventually returns this action
+
+(This section was **confusing AF** -- might want to re-watch it or invest time watching outside resources. Honestly doesn't seem like a worthwhile pattern when implementing the same approach in the Component itself was so easy)
+
+## Getting Started with Fetching Data
+
+## Finalizing the Fetching Logic
+
+## Exploring the Redux DevTools
+
+- These are extra tools which make debugging Redux and its state easier
+- Install as a Chrome, Firefox, Edge, etc add-on
+- Can view when actions occur, the state they change, a timeline of all actions, etc
+
+## Summary
+
+- Practiced more Redux
+- Learned about Redux with side-effects or async code
+- Can put this async / side-effect code different places, and how to do each
+  - We prefer this code in Action Creators or Components, **never reducers**
+  - Putting in Component was rather lean and simple
+  - Putting it in custom action creators is a bit more complex, perhaps more elegant
+- Learned Redux DevTools
+  - Understand our Redux store and state better
+
+`Finished Section: 11/28/2021`
+
 # Section 20: Building a Multi-Page SPA w/ React Router
 
 # Section 21: Deploying React Apps
