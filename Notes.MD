@@ -1083,3 +1083,181 @@ Much like in Colt Steele's React course, we are going to make use of the third p
 
 `Section Completed: 11/29/2021`
 
+## Starting Project & Why You Would Replace Redux
+
+- Maybe you don't want to learn Redux
+- Maybe you rather stay in the React-Only world (no reliance on outside packages)
+  - Smaller bundle for your app, less code shipped
+- Simply want to explore how you can avoid prop-drilling but still manage state without using Redux
+
+## Alternative: Using the Context API
+
+## Context API Summary (and why NOT to use it instead of Redux)
+
+Converting from Redux to the Context API was rather simple. But what is the downside of this approach?
+
+- Context is great for _low frequency updates_, but not high frequency ones
+  - Could argue that the ability to Favorite / Unfavorite is something that happens frequently
+- React Context API has no way of knowing which Component that uses the Context is concerned or not
+  - _Every_ Component that uses Context will be re-rendered when the Context changes, whether or not that Component uses that piece of Context
+- Meant for things like Theme changes, auth, etc
+
+Still another non-Redux alternative that addresses these shortcomings...
+
+## Getting Started with a Custom Hook as a Store
+
+Manage state globally with just React and JavaScript! We basically create our own store and ability to have actions, dispatch based on those actions, set listeners to watch for global state changes, etc
+
+```js
+import { useState, useEffect } from 'react';
+
+let globalState = {};
+let listeners = [];
+let actions = {};
+
+export const useStore = () => {
+  const setState = useState(globalState)[1];
+
+  const dispatch = (actionIdentifier) => {
+    // Call the appropriate action function, which returns an updated state
+    const updatedState = actions[actionIdentifier](globalState);
+
+    // Updated Global State
+    globalState = { ...globalState, ...updatedState };
+
+    // Inform all listeners about this state update:
+    for (const listener of listeners) {
+      listener(globalState);
+    }
+  };
+
+  useEffect(() => {
+    listeners.push(setState);
+
+    // Remove listener when unmount
+    return () => {
+      listeners = listeners.filter((listener) => listeners !== setState);
+    };
+  }, [setState]);
+
+  return [globalState, dispatch];
+};
+
+export const initStore = (userActions, initialState) => {
+  if (initialState) {
+    globalState = { ...globalState, ...initialState };
+    actions = { ...actions, ...userActions };
+  }
+};
+```
+
+## Creating a Concrete Store
+
+```js
+import { initStore } from './store';
+
+const configureStore = () => {
+  const actions = {
+    TOGGLE_FAVORITE: (currentState, productId) => {
+      return {
+        products: currentState.map((product) => {
+          return product.id === productId
+            ? { ...product, isFavorite: !product.isFavorite }
+            : product;
+        }),
+      };
+    },
+  };
+
+  initStore(actions, [
+    {
+      id: 'p1',
+      title: 'Red Scarf',
+      description: 'A pretty red scarf.',
+      isFavorite: false,
+    },
+    // Etc for other products
+  ]);
+};
+
+export default configureStore;
+```
+
+Now how will we use our custom store?
+
+## Using the Custom Store
+
+To use the store, we:
+
+- 1. Import the store as a named import
+- 2. Call `useStore()` and set a 2-element array equal to it, where the first element is the global state and the second is a dispatch function
+
+Examples of using custom store hook to access a piece of the global state:
+
+```js
+// Favorites.js
+import { useStore } from './store';
+
+const [state, dispatch] = useStore();
+
+// Now have access to state, which includes a products property:
+state.products; // can access this
+```
+
+Example of using our custom store hook to dispatch an action (favorite an item):
+
+```js
+// ProductItem.js
+import { useStore } from './store';
+
+const toggleFavHandler = () => {
+  dispatch('TOGGLE_FAVORITE', props.id);
+};
+```
+
+## Custom Hook Store Summary
+
+We just built a custom, Redux-like store
+
+- Variables for globalState, listeners, and actions
+  - Aren't global. Only exist in our store file. Shared in entire app
+  - Every file which imports from the store.js file will use the same values stored there
+- That file creates our own custom useStore hook, using the variables defined outside of the hook
+  - If defined inside the hook, every Component that used this hook would use its own values -- but we want shared!
+- This allows us to globally manage the state, listeners, and actions
+- In the useStore hook, we have our dispatch function there
+  - It makes sure that whenever we call dispatch we update our global state and call our listeners (which are just setState calls, where we "abuse" the fact that when we call the state update function that useState gives us, any component which uses our custom hook will re-render)
+  - We register one listener per component with the help of useEffect, unregister it when component is destroyed
+- Have a way of initializing our store
+  - Can call multiple times, since we don't replace our actions or global state -- we take teh current actions and global state and merge in new ones
+  - This allows us to create concrete store slices (like with Redux with multiple reducers)
+- We configure sthe store, set up some actions, and call that initialize store function above with those actions and the initial state of _that_ slice of the global state. Merged with global state and global actions map
+- From anywhere in our project we can use that store
+  - Can tap into the current global state
+  - Can tap into the dispatch function to dispatch an action
+
+This saves us from that extra dependency on Redux! (But is this worth the trouble???)
+
+## Optimizing the Custom Hook Store
+
+We can note that every time we Favorite / Unfavorite an item, **every** ProductItem is being re-rendered. But only the one that actually had its state changed should be re-rendered
+But also not that wrapping ProductItem in a React.memo() does not fix this
+
+- (Note: Mine is actually only rendering once? Even without React.memo, and without the update we do in our store soon)
+
+We add an argument to our custom useStore hook, "shouldListen". We set this to true by default. Now when we register our listeners, we first check if shouldListen is true, and then and only then do we push the setState into that listener.
+
+## Wrap Up
+
+Really advanced section!
+
+- You can definitely stick to Redux
+  - The overhead is probably not that bad
+  - All the heavy lifting done for you once you learn how to use Redux
+- Context API if you have low frequency updates and want to have less dependencies
+- Can create our own custom hook that has Redux-like store / action / dispatch functionality
+- Can also use a third party package which essentially creates the custom hook for us: https://www.npmjs.com/package/use-global-hook
+  - Less than 1kb
+  - Install using `npm i use-global-hook`
+
+`Section Completed: 11/29/2021`
