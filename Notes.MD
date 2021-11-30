@@ -1261,3 +1261,237 @@ Really advanced section!
   - Install using `npm i use-global-hook`
 
 `Section Completed: 11/29/2021`
+
+# Section 26: Testing React Apps (Unit Tests)
+
+`Originally Started: TBD`
+
+# Section 27: React + TypeScript
+
+(Might be skimpy on the notes since I'm using this section as merely a refresher)
+
+## Module Introduction
+
+- What and Why?
+- TypeScript Basics
+- Combining React & TypeScript
+
+## What & Why?
+
+TypeScript is a "superset" to JavaScript
+
+- Extends JavaScript
+- Adds **static typing** (JS is dynamically typed)
+- Does not run in browser; must be compiled to JavaScript
+- Invoke comiler with `npx tsc` or `npx tsc <typescriptFilename.ts>`
+
+## Understanding Type Alias
+
+```js
+type Person = {
+  name: string,
+  age: number,
+};
+
+let person: Person;
+let people: Person[];
+```
+
+## Functions & Funciton Types
+
+```js
+// Return type is infered, but we write :number just to show how we could do it
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// Void if never returns a value
+function printStuff(value: any): void {
+  console.log(value);
+}
+```
+
+## Diving Into Generics
+
+```js
+function insertAtBeginning(array: any[], value: any) {
+  const newArray = [value, ...array];
+  return newArray;
+}
+
+const demoArray = [1, 2, 3];
+const updatedArray = insertAtBeginning(demyArray, -1);
+updatedArray.split(""); // Doesn't give error -- but this doesn't work on number types!
+
+// Create Generics version
+function insertAtBeginning<T>(array: T[], value: T) {
+  const newArray = [value, ...array];
+  return newArray;
+}
+
+const demoArray = [1, 2, 3];
+// Now TypeScript understands we are specifically dealing with numbers in this case
+const updatedArray = insertAtBeginning(demoArray, -1);
+updatedArray.split(""): // Correcetly warns of error now!
+const stringArray = insertAtBeginning(["a", "b"], "c");
+```
+
+A Closer Look At Generics
+Generic Types ("Generics") can be tricky to wrap your head around.
+
+But indeed, we are working with them all the time - one of the most prominent examples is an array.
+
+Consider this example array:
+
+let numbers = [1, 2, 3];
+Here, the type is inferred, but if we would assign it explicitly, we could do it like this:
+
+let numbers: number[] = [1, 2, 3];
+number[] is the TypeScript notation for saying "this is an array of numbers".
+
+But actually, number[] is just syntactic sugar!
+
+The actual type is Array. ALL arrays are of the Array type.
+
+BUT: Since an array type really only makes sense if we also describe the type of items in the array, Array actually is a generic type.
+
+You could also write the above example liks this:
+
+let numbers: Array<number> = [1, 2, 3];
+Here we have the angle brackets (<>) again! But this time NOT to create our own type (as we did it in the previous lecture) but instead to tell TypeScript which actual type should be used for the "generic type placeholder" (T in the previous lecture).
+
+Just as shown in the last lecture, TypeScript would be able to infer this as well - we rely on that when we just write:
+
+let numbers = [1, 2, 3];
+But if we want to explicitly set a type, we could do it like this:
+
+let numbers: Array<number> = [1, 2, 3];
+Of course it can be a bit annoying to write this rather long and clunky type, that's why we have this alternative (syntactic sugar) for arrays:
+
+let numbers: number[] = [1, 2, 3];
+If we take the example from the previous lecture, we could've also set the concrete type for our placeholder T explicitly:
+
+const stringArray = insertAtBeginning<string>(['a', 'b', 'c'], 'd');
+So we can not just use the angle brackets to define a generic type but also to USE a generic type and explicitly set the placeholder type that should be used - sometimes this is required if TypeScript is not able to infer the (correct) type. We'll see this later in this course section!
+
+## Creating a React + TypeScript Project
+
+- Can integrate TypeScript in a create-react-app project
+  - Either in a pre-existing create-react-app or to a new one
+- In a new create-react-app: `npx create-react-app my-ap --template typescript`
+- Should use `.tsx` as file extention if using React + TypeScript
+- Compiles TS to JS for us automatically, so might be a bit more sluggish after each code change
+- Note the typescript dependency
+  - But also `@types/jest, @types/node, @types/react-dom, @types/react`
+    - Necessary for auto-completion and IDE support
+
+## Working with Props & TypeScript
+
+We can make use of Generic Types to let React know that our Component is a React Component, and thus has access to things like Children:
+
+```js
+const Todos: React.FC<{ items: string[] }> = (props) => {
+  return (<ul>
+  {props.children}
+  {props.items.map(item) => <li key={item}>{item}</li>}
+  </ul>
+  );
+};
+```
+
+- In the above, TypeScript knows we have a children and item property on props.
+- React.FC is a Generic Type! So we define our data shape inside the brackets. This is as opposed to previously where we were the ones defining a function as being generic.
+- Whatever we define in the angled brackets helps us merge our object type with the base object type (with the children property, etc)
+  - Now it knows of our custom Props along with the default Props (children, etc)
+- Now we get helpful auto-completion inside this component, and outside the Component where it is being called upon
+  - E.g, errors if we didn't pass the correct props in
+
+## Adding a Data Model
+
+- Can add a new sub-folder (like "models") where we can define our data
+  - E.g, to define what a "Todo" looks like
+- Lots of ways to define our data
+  - We could define with `type` keyword (TypeScript-specific)
+  - We could define with `interface`
+  - We could even define with `class` and instantiate
+
+```js
+// models/todo.ts
+class Todo {
+  id: string;
+  text: string;
+
+  constructor(todoText: string) {
+    this.text = todoText;
+    this.id = new Date().toISOString();
+  }
+}
+
+export default Todo;
+```
+
+- Note in TypeScript `class` we don't have to define attributes in a Constructor
+- In TypeScript we have to define our properties and their type ahead of time, outside the Constructor
+
+Can now use this model in a Component:
+
+```js
+import Todo from './models/todo';
+
+function App() {
+  const todos = [new Todo('Learn React'), new Todo('Learn TypeSCript')];
+
+  return (
+    <div>
+      <Todos items={todos} />
+    </div>
+  );
+}
+```
+
+- Our data definition serves as a Class to create new objects **and** a type for our Component:
+
+```js
+// Todos.tsx
+const Todos: React.FC<{ items: Todo[] }> = (props) => {
+  return (
+    <ul>
+      {props.children}
+      {props.items.map(item) => <li key={item.id}>{item.text}</li>}
+    </ul>
+  );
+};
+```
+
+## Working with refs & useRef
+
+In TypeScript, we can add the following after a value (like inputRef.current.value):
+
+- "?": Try to get me the value in this potentially-null value
+  - E.g `const val = inputRef.current?.value`
+- "!": I'm certain the value here won't be null -- so get me the actual stored value!
+  - E.g `const val = inputRef.current!.value`
+
+## Managing State & TypeScript
+
+If we want to have state for, example, our Todo items, we have an issue: When we call useState and give it an initial value of an empty array, TypeScript infers that our value must be of type `never[]` -- an array that never has a value! But it will have a value...just not yet. To fix it, we let TypeScript know by giving `useState` some angled brackets:
+
+```js
+const [todos, setTodos] = useState<Todo[]>([]);
+```
+
+## The Context API & TypeScript
+
+**VERY IMPORTANT** Refer back to this lesson **A LOT** until I understand it more! And **PRACTICE** using Context with TypeScript until it becomes easy
+
+## Bonus: Exploring tsconfig.json
+
+`target`: Controls the version of JS your code will be transformed to. "es5" good for broad browser support
+`lib`: Influences which kind of types are known outside of the box. Examples: "dom" (knows types like HTMLInputElement), "dom.iterable", "esnext"
+`allowJs`: Specifies that we can allow .js extension files in our projects. Mix and match JS and TS files
+`strict`: True or false. True means we cannot have any use of "any" values. Explicitely set our types in places where TS can't infer. Specifies other things as well
+`jsx`: Controls that JSX code is supported and which output code should be generated
+
+Good to keep the default settings, unless you encounter a situation where you think they need changed
+
+`Section Completed: 11/29/2021`
