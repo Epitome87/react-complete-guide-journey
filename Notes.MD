@@ -604,6 +604,8 @@ And that's it for this section! We're now leveraging a backend for fetching our 
 
 # Section 18: Redux (An Alternative to the Context API)
 
+`Originally Started: 11/27/2021`
+
 ## Module Introduction
 
 - Understanding Redux
@@ -776,6 +778,8 @@ In an Existing App
 - `yard add @reduxjs/toolkit`
 
 Can then uninstall Redux, as the Redux Toolkit includes it!
+
+`Originally Completed: 11/28/2021`
 
 # Section 19: Advanced Redux
 
@@ -1083,6 +1087,10 @@ Much like in Colt Steele's React course, we are going to make use of the third p
 
 `Section Completed: 11/29/2021`
 
+# Section 25 - Replacing Redux with React Hooks
+
+### `Originally Started: 11/29/2021`
+
 ## Starting Project & Why You Would Replace Redux
 
 - Maybe you don't want to learn Redux
@@ -1267,6 +1275,8 @@ Really advanced section!
 `Originally Started: TBD`
 
 # Section 27: React + TypeScript
+
+### `Originally Started: 11/29/2021`
 
 (Might be skimpy on the notes since I'm using this section as merely a refresher)
 
@@ -1495,3 +1505,122 @@ const [todos, setTodos] = useState<Todo[]>([]);
 Good to keep the default settings, unless you encounter a situation where you think they need changed
 
 `Section Completed: 11/29/2021`
+
+# Section 28: Optional: React Hooks Intro & Summary
+
+### `Originally Started: 11/29/2021`
+
+This section seems to be if you took the old course (which didn't teach Hooks or focus much on Functional components). It seems the information this section teaches was slowly integrated into the new course -- which is the version I took. I will breeze through this section at 2x speed as a refresher and to see if any new tidbits slip in! So probably very skimpy on notes.
+
+## useState
+
+- Creates something that survives re-render cycles
+- With Functional components, calling useState with a value, that value replaces that entire state snapshot
+- With Class components, calling setState with a value had that value _merge_ with the existing value(s) in the state. State had to be an object.
+- Should update any state that relies on the old state with the alternate version that accepts a function as a parameter:
+
+```js
+useState((previousState) => previousState++);
+```
+
+## More on UseState() & State Updating
+
+- Some complicated AF thing about closures and the event objects. Might want to re-watch. I've never encountered having to do any workarounds so far, though.
+
+## Rules of Hooks
+
+- Must only use hooks in functional components or custom hooks
+- Must be used on root level of component (not in a nested function)
+  - Can set state here, but cannot call useState here, for instance
+  - Can't be in an if-statement either
+
+## More on State Batching & State Updates
+
+More on State Batching & State Updates
+React batches state updates - see: https://github.com/facebook/react/issues/10231#issuecomment-316644950
+
+That simply means that calling
+
+```js
+setName('Max');
+setAge(30);
+```
+
+in the same synchronous (!) execution cycle (e.g. in the same function) will NOT trigger two component re-render cycles.
+
+Instead, the component will only re-render once and both state updates will be applied simultaneously.
+
+Not directly related, but also sometimes misunderstood, is when the new state value is available.
+
+Consider this code:
+
+```js
+console.log(name); // prints name state, e.g. 'Manu'
+setName('Max');
+console.log(name); // ??? what gets printed? 'Max'?
+```
+
+You could think that accessing the name state after setName('Max'); should yield the new value (e.g. 'Max') but this is NOT the case. Keep in mind, that the new state value is only available in the next component render cycle (which gets scheduled by calling setName()).
+
+Both concepts (batching and when new state is available) behave in the same way for both functional components with hooks as well as class-based components with this.setState()!
+
+## useReducer
+
+- Alternative to useState if you have a more complex state, state that relies on the previous state a lot, or multiple states work together
+- Define the reducer function outside of the Component, so it's not unnecessarily re-created when Component is
+  - If you have props that the reducer relies on, you can obviously put it inside the component
+
+## useContext
+
+- Use to avoid "prop drilling"
+
+## useCallback & useMemo
+
+useCallback...
+
+- Optimizes performance
+- Wrap _functions_ around `useCallback()`
+  - Good for functions that we pass down as props
+- Should also React.memo around the component passing the function prop
+
+useMemo...
+
+- Can also use the `useMemo()` hook for _values_
+- Can pass a returned JSX element / Component, first example
+- Can use on operations that take a while to calculate a value
+
+Might be worth _not_ using these if trivial / small components
+
+- Could be easier to re-render than having React check whether props / values change
+
+# Section 29: Optional: React Summary & Core Feature Walkthrough
+
+## 467 Styling with CSS Modules
+
+create-react-app gives us a feature called **CSS Modules**
+
+- Behind the scene code transformation that lets us attach CSS files to specific components
+- Files must end in `.module.css`
+- Import in a component like: `import classes from "./ourfile.module.css"`
+- This imports an object where each property is a CSS class selector and it has style properties
+- Class names are made unique per component -- avoids conflicts
+
+## 468 Outputting Lists of Data
+
+- React knows how to render arrays:
+
+```js
+return <div>{[<li>Item1</li>, <li>Item2</li>, <li>Item3</li>]}</div>;
+```
+
+Though we'll almost always use the Array `map()` function to do so.
+
+```js
+return (
+  <div>
+    {items.map((item) => {
+      return <li key={someId}>item.text</li>;
+    })}
+  </div>
+);
+```
