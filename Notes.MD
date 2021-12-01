@@ -99,6 +99,8 @@ Since createContext returns a Component in a way, we use the naming convention o
 
 ## Section 11: Food Order App
 
+In this section we built a small Food Order app!
+
 ## Section 12: Behind the Scenes Look at React and Optimization Techniques
 
 - When exporting a component, you can wrap it in a React.memo() to reduce the number of times it is re-evaluated. It will only run again when one of its props/states actually changes. However, the increased overhead required by React to compare the old / new prop values may not always be worth the reduction in re-evaluations. Best if used carefully and near the top-level of a branch of components.
@@ -166,7 +168,7 @@ Since createContext returns a Component in a way, we use the naming convention o
   ```js
   function fetchMoviesHandler() {
     // Fetch returns a Promise that will return a response
-    fetch('https://swapi.dev/api/films/')
+    fetch("https://swapi.dev/api/films/")
       .then((response) => {
         // Returns a Promise
         return response.json();
@@ -193,7 +195,7 @@ Since createContext returns a Component in a way, we use the naming convention o
 ```js
 function fetchMoviesHandler() {
   // Fetch returns a Promise that will return a response
-  fetch('https://swapi.dev/api/films/')
+  fetch("https://swapi.dev/api/films/")
     .then((response) => {
       // Returns a Promise
       return response.json();
@@ -681,11 +683,11 @@ The Reducer Function
 - Should be a pure function (same inputs always produce same outputs, no side effects - no HTTP requests, fetch / write to local storage)
 
 ```js
-const redux = require('redux');
+const redux = require("redux");
 
 const counterReducer = (state = { counter: 0 }, action) => {
   switch (action.type) {
-    case 'increment':
+    case "increment":
       return {
         counter: state.counter + 1,
       };
@@ -706,7 +708,7 @@ store.subscribe(counterSubscriber);
 
 setInterval(() => {
   // counterSubscriber will run every 2 seconds
-  store.dispatch({ type: 'increment' });
+  store.dispatch({ type: "increment" });
 }, 2000);
 ```
 
@@ -729,14 +731,14 @@ setInterval(() => {
 
 ```js
 // Index.js
-import { Provider } from 'react-redux';
-import store from './store/index';
+import { Provider } from "react-redux";
+import store from "./store/index";
 
 ReactDOM.render(
   <Provider store={store}>
     <App />
   </Provider>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 ```
 
@@ -875,6 +877,25 @@ What Is a "Thunk"?
 
 # Section 20: Building a Multi-Page SPA w/ React Router
 
+`Originally Started: 11/30/2021`
+
+## Working with Nested Routes
+
+- You're not limited to defining Routes in only one place
+- If put on a Component that's currently active, it will be evaluated
+- Can define a Route within a Route, allowing you to build more complex interfaces
+- Renders both Routes
+
+## Redirects
+
+```js
+import { Redirect } from "react-router-dom";
+
+<Route path="/" exact>
+  <Redirect to="/home" />
+</Route>;
+```
+
 # Section 21: Deploying React Apps
 
 ## Module Introduction:
@@ -905,11 +926,11 @@ What Is a "Thunk"?
 - How to use:
 
 ```js
-import React from 'react';
-import AllQuotes from './pages/AllQuotes';
+import React from "react";
+import AllQuotes from "./pages/AllQuotes";
 // import NewQuote from "./pages/NewQuote";
 // Instead of the above import, do:
-const NewQuote = React.lazy(() => import('./pagesNewQuote'));
+const NewQuote = React.lazy(() => import("./pagesNewQuote"));
 ```
 
 - But need to define a fallback UI for when the Component's code is being downloaded
@@ -1117,7 +1138,7 @@ Still another non-Redux alternative that addresses these shortcomings...
 Manage state globally with just React and JavaScript! We basically create our own store and ability to have actions, dispatch based on those actions, set listeners to watch for global state changes, etc
 
 ```js
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 let globalState = {};
 let listeners = [];
@@ -1162,7 +1183,7 @@ export const initStore = (userActions, initialState) => {
 ## Creating a Concrete Store
 
 ```js
-import { initStore } from './store';
+import { initStore } from "./store";
 
 const configureStore = () => {
   const actions = {
@@ -1179,9 +1200,9 @@ const configureStore = () => {
 
   initStore(actions, [
     {
-      id: 'p1',
-      title: 'Red Scarf',
-      description: 'A pretty red scarf.',
+      id: "p1",
+      title: "Red Scarf",
+      description: "A pretty red scarf.",
       isFavorite: false,
     },
     // Etc for other products
@@ -1204,7 +1225,7 @@ Examples of using custom store hook to access a piece of the global state:
 
 ```js
 // Favorites.js
-import { useStore } from './store';
+import { useStore } from "./store";
 
 const [state, dispatch] = useStore();
 
@@ -1216,10 +1237,10 @@ Example of using our custom store hook to dispatch an action (favorite an item):
 
 ```js
 // ProductItem.js
-import { useStore } from './store';
+import { useStore } from "./store";
 
 const toggleFavHandler = () => {
-  dispatch('TOGGLE_FAVORITE', props.id);
+  dispatch("TOGGLE_FAVORITE", props.id);
 };
 ```
 
@@ -1446,10 +1467,10 @@ export default Todo;
 Can now use this model in a Component:
 
 ```js
-import Todo from './models/todo';
+import Todo from "./models/todo";
 
 function App() {
-  const todos = [new Todo('Learn React'), new Todo('Learn TypeSCript')];
+  const todos = [new Todo("Learn React"), new Todo("Learn TypeSCript")];
 
   return (
     <div>
@@ -1542,7 +1563,7 @@ React batches state updates - see: https://github.com/facebook/react/issues/1023
 That simply means that calling
 
 ```js
-setName('Max');
+setName("Max");
 setAge(30);
 ```
 
@@ -1556,7 +1577,7 @@ Consider this code:
 
 ```js
 console.log(name); // prints name state, e.g. 'Manu'
-setName('Max');
+setName("Max");
 console.log(name); // ??? what gets printed? 'Max'?
 ```
 
