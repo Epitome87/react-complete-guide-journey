@@ -875,6 +875,145 @@ What Is a "Thunk"?
 
 # Section 20: Building a Multi-Page SPA w/ React Router
 
+### `Originally Started: 11/29/2021`
+
+## Module Introduction
+
+So far we've created apps where the URL never changes. Although we build Single Page Apps with React, we want the URL to change for several reasons, including ability to Bookmark, share a particular area of the site with someone, etc.
+
+We will build a SPA, but where React can change the URL!
+
+- What is Client-Side "Routing"?
+- Using React-Router
+- Advanced Features: Dynamic & Nested Routes, and more!
+
+## What is Routing & Why?
+
+- When building complex user interfaces, we typically build **Single Page Applications (SPAs)**
+  - Only one initial HTML request & response
+  - Page (URL) changes are then handled by client-side (React) code
+    - Changes the visible content without fetching a new HTML file
+
+We can accomplish this with a very popular package... **React-Router**!
+
+## Installing React Router
+
+We will learn Version 5, although 6 just came out.
+
+`npm install react-router-dom@5` or `npm install react-router-dom@latest` if we want the newest
+
+- Note we don't install just `react-router` -- we want the DOM version, which is the version for apps that run in the browser
+
+## Defining & Using Routes
+
+```js
+// In App (or Index)
+import { BrowserRouter } from 'react-router-dom';
+
+<BrowserRouter>
+  <App />
+</BrowserRouter>;
+
+// In some component
+import { Route } from 'react-router-dom';
+
+<Route path='/home'>
+  <OurComponent />
+</Route>;
+```
+
+The above "OurComponent" will only render if the URL is "/home"
+
+- Might be good to store Components that are used as Routes in a "pages" folder
+
+## Working with Links
+
+We can use the **Link** Component to essentially replace anchor tags
+
+- We don't want anchor tags, because they cause a request to be made and the page will refresh
+
+```js
+// Basically just replace any anchors with <Link>
+<Link to='/about'>About</Link>
+```
+
+## Using NavLinks
+
+Often we want to highlight the active link in a navigation, or give it some special styling
+
+To do this, we can use the **NavLink** component instead of the Link.
+
+- Works the same
+- Sets a special CSS class name on the active link
+- We define this class name with the NavLink's **activeClassName** prop:
+
+```js
+<NavLink activeClassName='ourClassName' to='/about'>
+  About
+</NavLink>
+```
+
+## Adding Dynamic Routes with Params
+
+For routes we cannot predict, or that use some special slug or ID, we can use **dynamic routes**
+
+- Basically just put ":paramName" in the route
+
+```js
+<Route path="/products/:productId">
+  <Product >
+</Route>
+```
+
+- Now any route matching "/products/anything" will be handled here
+- We use dynamic routes when we want to retrieve data that depends on the type of product we click, for example.
+
+## Extracting Route Params
+
+```js
+import { useParams } from 'react-router-dom';
+
+const params = useParams();
+
+// If url is: /products/:productId/
+params.productID;
+```
+
+## Using "Switch" and "exact" for Configuring Routes
+
+When we define our routes, by default **all** routes that match our URL will be loaded.
+Example: "/products/someProductId" will match "/products" **and** "/products/:productId"
+
+- Sometimes this is desirable behavior, but most of the time it is not
+- We can ensure only one route is active at once by wrapping all our Route elements in a **Switch** component
+
+```js
+import { Switch } from 'react-router-dom';
+
+<Switch>
+  <Route path='/products'>Products Stuff</Route>
+  <Route path='products/:productId'>Specific Product Stuff</Route>
+</Switch>;
+```
+
+The Route that is matched **first** will be the one that is rendered
+
+- Note that a "match" in React-Router simply means the route _starts_ with what is in the URL
+
+  - So "/" matches "/products"
+    We can fix this new issue by re-ordering the Routes in a way that prevents this type of undesirable match. But this isn't always possible, and it's tedious and annoying!
+
+- So we can use the `exact` keyword inside a Route element, to ensure the patch is an actual _match_ in the truest definition of the word
+  - It now has to match the _full_ path name!
+
+```js
+<Route path="/products" exact>
+```
+
+## Working with Nested Routes
+
+`Stopped on this section, at 11:30 on 11/29/21`
+
 # Section 21: Deploying React Apps
 
 ## Module Introduction:
