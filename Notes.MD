@@ -99,6 +99,8 @@ Since createContext returns a Component in a way, we use the naming convention o
 
 ## Section 11: Food Order App
 
+In this section we built a small Food Order app!
+
 ## Section 12: Behind the Scenes Look at React and Optimization Techniques
 
 - When exporting a component, you can wrap it in a React.memo() to reduce the number of times it is re-evaluated. It will only run again when one of its props/states actually changes. However, the increased overhead required by React to compare the old / new prop values may not always be worth the reduction in re-evaluations. Best if used carefully and near the top-level of a branch of components.
@@ -1010,9 +1012,24 @@ The Route that is matched **first** will be the one that is rendered
 <Route path="/products" exact>
 ```
 
+`Originally Started: 11/30/2021`
+
 ## Working with Nested Routes
 
-`Stopped on this section, at 11:30 on 11/29/21`
+- You're not limited to defining Routes in only one place
+- If put on a Component that's currently active, it will be evaluated
+- Can define a Route within a Route, allowing you to build more complex interfaces
+- Renders both Routes
+
+## Redirects
+
+```js
+import { Redirect } from 'react-router-dom';
+
+<Route path='/' exact>
+  <Redirect to='/home' />
+</Route>;
+```
 
 # Section 21: Deploying React Apps
 
