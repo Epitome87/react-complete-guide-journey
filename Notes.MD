@@ -1161,6 +1161,155 @@ history.push({
 
 (Not Router related!)
 
+## IMPORTANT: REACT ROUTER UPDATE (TO VERSION 6)
+
+React Router was updated! It introduces quite a few changes that we will need to keep in mind if we want to use the latest version. However, the process to upgrade old React Router code to new code is rather simple.
+
+Installation
+
+`npm react-router-dom@6` or `npm react-router-dom@latest`
+
+Switch - No Longer Used
+
+- With version 6, Switch does not exist!
+- We replace Switch with `Routes`
+  - `import { Routes } from "react-router-dom";`
+
+Route Changes
+
+- The content we want to render when a Route is matched is no longer a child of the Route component
+- Instead, we pass the content we want to render to the Route's `element` property: `Route path="/welcome" element={<WelcomeComponent />}`
+  - This `element` property expects JSX!
+- Since Route no longer expects children, it becomes a self-closing component
+
+Internal Logic for Path Evaluation
+
+- In Version 5, we relied on the `exact` keyword
+- In Version 6, there is **no** `exact` prop! By default, all paths are expecting an exact match
+- If you want the old non-exact behavior, where only the _start_ of the path name needs to match, you add `/*` to the end of the Route's `path` property
+- Version 6 now also has a better algorithm for picking the best Route to be loaded
+  - Therefore, the order you define Route in is no longer important, even when using the `/*` syntax for non-exact matches
+
+Link
+
+- Still have Link and NavLink components
+- In version 5, you could use the `activeClassName` prop on a NavLink to apply some CSS class to active links
+- In version 6, this prop is removed; instead, we manually figure out if the class is active:
+
+```js
+<NavLink
+  className={(navData) => {
+    navData.isActive;
+  }}
+  to='/welcome'
+>
+  Welcome
+</NavLink>
+```
+
+- A NavLink's className now expects a function, which gives you info about the link and current state of navigation
+- The object received as a param inside this function gives you access to an `.isActive` property
+- You can use the `isActive` return value to dynamically apply classes:
+
+```js
+<NavLink className=={(navData) => navData.isActive ? classes.active : "" }>
+```
+
+- More control and customization option, but a little more vorbose and tedious than version 5
+
+Redirect
+
+- Redirect component no longer exists!
+- We use `Navigate` instead:
+
+```js
+import { Navigate } from 'react-router-dom';
+
+<Navigate to='/welcome' />;
+```
+
+- Used like the above, this _pushes_ a navigation to this page onto the navigation stack
+- If we truly want to redirect (replace current page with new page) we'd have to add the `replace` prop:
+
+```js
+<Navigate to='/welcome' replace />
+```
+
+Nested Routes
+
+- In version 5, we didn't have to wrap all our Route definitions in a Routes (or Switch) tag.
+- In version 6, we must wrap our Route components in Routes, always
+  - Even if we have just one Route in a nested component, we must wrap it with `<Routes> </Routes>`
+- The logic and syntax you need for nested routes also changed -- for the better!
+- Example. If we have a "/welcome" route, and we have logic nested in it to where we _also_ want to render an _additional_ route at the same time for new users (at "/welcome/new-user")
+  - We must ensure the parent route uses the new "/\*" syntax, to allow for non-exact matches
+  - The child / nested route's `path` property is now _relative!_ So instead of the child Route's `path` being `path="/welcome/new-user"`, we change it to the following in version 6: `path="new-user"`
+- Note that for Link and NavLink in nested components / routoes, the `to` paths are also relative.
+- Because of the relative path change, we won't need custom path resolving logic any more! So no more use of `match.url` and `match.path` in our path/to properties
+
+Alternate Way of Nesting Routes
+
+Instead of defining routes in the component where we want to load that nested route content, we _can_ (but don't have to) cut the route from the component, go to the main route definition file (App in our case) and define the nested routes there -- as a child of other Route components!
+
+```js
+// App.js
+<Routes>
+  <Route path="/"> element={<Navigate to="/welcome" />} />
+  <Route path="/welcome/*" element={<Welcome />}>
+    <Route path="new-user" element={<p>Welcome, new user!</p>} />
+  </Route>
+</Routes>
+```
+
+- In the above example, we removed the Route for path="new-user" from a Component we have in another file, and place the logic directly with all the other main Route definitions
+- Benefit of having all Route definitions in one place -- easier to see them all and understand the layout of the app
+- With this syntax, we have to tell React where in the DOM to insert this nested Route's content
+
+  - So we use the new `<Outlet />` component!
+
+  ```js
+  import { Outlet } from 'react-router-dom';
+
+  const Welcome = () => {
+    return (
+      <section>
+        <h1>The Welcome Page</h1>
+        <Outlet />
+      </section>
+    );
+  };
+  ```
+
+  - In the above, we are telling React that for wherever there is a nested Route in the Welcome component, we want it rendered in the location of the Outlet.
+
+Imperative Navigation
+
+- If we want to navigate when a certain action finishes, button was clicked, etc, in version 5 we used `useHistory` and used that object to call `push` to navigate to a new URL
+- In version 6, we use the `useNavigate` hook instead!
+
+  - Used pretty much the same way as `useHistory`. If we want to push a new location onto the history stack and go there:
+
+  ```js
+  import { useNavigate } from 'react-router-dom';
+
+  const navigate = useNavigate();
+  navigate('/welcome');
+  ```
+
+  - Or, for a redirect (replaces instead of pushes onto the history stack, disables us from revisiting previous page):
+
+  ```js
+  navigate('welcome', { replace: true });
+  ```
+
+  - We can also pass in numbers to `navigate`. Example: `navigate(-1)` means go back to previous page, `navigate(1)` means go forward one page, `navigate(-3)` means go back 3 pages, etc
+
+Prompt Component
+
+- In version 5, we used the `Prompt` component to ask the user to confirm if they wanted to leave a page (if on a form, for example)
+- Unfortunately, version 6 currently does not have this functionality!
+  - Probably will come back in the future
+
 # Section 21: Deploying React Apps
 
 ## Module Introduction:
