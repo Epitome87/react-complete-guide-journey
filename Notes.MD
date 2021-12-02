@@ -1031,6 +1031,136 @@ import { Redirect } from 'react-router-dom';
 </Route>;
 ```
 
+## Adding a "Not Found" Page
+
+- Define a route with the wildcard character: `<Route path="*">`
+- In that route, render your Page Not Found JSX
+
+## Implementing Programmatic (Imperative) Navigation
+
+If we want to programmatically send our users to a new URL, based on an action they took (that isn't simply clicking a NavLink or Link), we can do so with react-router-dom's `useHistory` hook:
+
+```js
+import { useHistory } from 'react-router-dom';
+
+const history = useHistory();
+
+// If we want to have the ability to go "Back" to the current URL:
+history.push('/quotes');
+
+// If we want to take the user to a new URL but disable their ability to go back to the current page:
+history.replace('/quotes');
+```
+
+## Preventing Possibly Unwanted Route Transitions with the "Prompt" Component
+
+In some situations, we want to alert the user that they are about to leave the page (if they are typing in form data, for instance). This allows the user to either Ok or Cancel the page change, so they don't lose their current place / form data if they didn't intend to. We can allow this type of functionality with the `Prompt` component:
+
+```js
+import { Prompt } from "react-router-dom";
+
+<Prompt when={isFormFocused} message={(location) => } />
+```
+
+- Import Prompt and use it as a Component
+- Set Prompt's `when` property to a true/false condition which specifies what condition must be met in order for a URL change to trigger a prompt
+- Prompt's `message` property expects a function which returns a string of text we want to show to the user
+  - Function stores a location object, which stores info about the page we are trying to go to
+  - Allows us to include the path we are trying to go to, for instance
+
+## Working with Query Parameters
+
+- Query Params are _optional_ -- whereas the route params we worked with earlier are _mandatory_
+- Does not impact the route-matching
+- For example, adding: "?sort=ascending" to the end of a URL, which provides optional logic for sorting
+
+```js
+import { useLocation } from 'react-router-dom';
+
+const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+
+// We can now use ".get()" and check what the value of the "search" query param is
+const isSortingAscending = queryParams.get('sort') === 'asc';
+```
+
+- We import `useLocation`, so we can retrieve information about our current page
+  - In particular, we get access to a `search` property, which shows our query params
+- We create a built-in vanilla JavaScript object called `URLSearchParams`, passing `location.search` into it: `const queryParams = new URLSearchParams(location.search)`
+  - This retrieves the current URL's query params
+  - We can check the query params for a certain param's value with the `get` method: `queryParams.get("sort")` (where "sort" is the param we want to retrieve the value of)
+
+It's also important to note that a call to `history.push("newUrlLocation")` will result in a Component's re-render.
+
+- We use this to our advantage, by retrieving the current location's query params outside of our component's render method, and use that information to develop what we want the component to render, based on the current query params
+
+## Getting Creative with Nested Routes
+
+We can take advantage of the power of nested Routes by rendering content conditionally based on the current Route, rather than introducing and managing new state into our component. Take our QuoteDetail component, for example. We want the "Load Comments" button to be rendered only when the comments aren't already showing (which also corresponds to when the url is appended with "/comments"). Instead of introducing a "areCommendsLoaded" state, we can wrap the Load Comments button in a Route that precludes "/comments":
+
+```js
+return (
+  <React.Fragment>
+    <HighlightedQuote text={quote.text} author={quote.author} />
+    <Route path={`/quotes/${params.quoteId}`} exact>
+      <div className='centered'>
+        <Link to={`/quotes/${params.quoteId}/comments`} className='btn--flat'>
+          Load Comments
+        </Link>
+      </div>
+    </Route>
+
+    <Route path={`/quotes/${params.quoteId}/comments`}>
+      <Comments />
+    </Route>
+  </React.Fragment>
+);
+```
+
+## Writing More Flexible Routing Code
+
+Rather than hard-coding our route paths everywhere, we can make use of `useLocation` and `useRouteMatch` to retrieve our current URL / path. Then, inside nested routes, we can embed that information rather than hard-coding it. This allows us to save time and code if we ever want to change a parent component's route -- we no longer have to dig into each nested route and change its path too!
+
+We can convert our above set of nested routes to:
+
+```js
+import { useLocation, useRouteMatch } from 'react-router-dom';
+
+return (
+  <React.Fragment>
+    <HighlightedQuote text={quote.text} author={quote.author} />
+    <Route path={match.path} exact>
+      <div className='centered'>
+        <Link to={`${match.url}/comments`} className='btn--flat'>
+          Load Comments
+        </Link>
+      </div>
+    </Route>
+
+    <Route path={`${match.path}/comments`}>
+      <Comments />
+    </Route>
+  </React.Fragment>
+);
+```
+
+We can also push an object into `history`, rather than creating long, ugly string representations of the URL we wish to navigate to:
+
+```js
+history.push({
+  pathname: location.pathname,
+  search: `?sort=${isSortingAscending ? 'desc' : 'asc'}`,
+});
+```
+
+## Sending & Getting Quote Data via HTTP
+
+(Not Router related!)
+
+## Adding the "Comments" Features
+
+(Not Router related!)
+
 # Section 21: Deploying React Apps
 
 ## Module Introduction:
