@@ -1310,6 +1310,8 @@ Prompt Component
 - Unfortunately, version 6 currently does not have this functionality!
   - Probably will come back in the future
 
+`Section Completed: 12/02/2021`
+
 # Section 21: Deploying React Apps
 
 ## Module Introduction:
@@ -1411,6 +1413,8 @@ npm run build
 
 # Section 23: A (Pretty Deep Dive) Introduction to Next.js
 
+### `Originally Started: 11/29/2021`
+
 ## Module Introduction
 
 - This module will teach...
@@ -1467,7 +1471,445 @@ npm run build
 
 ## Adding First Pages
 
+- The filename under the "pages" folder will be used as a path name. E.g "news.jsx" is served to "our-domain/news"
+- The index.js file is served for the root route
+- Inside these files, you create typical React components (which don't have to be named after the file name, as is typically convention with pure React components)
+
 ## Adding Nested Paths & Pages (Nested Routes)
+
+Instead of having a file like "news.js" in the "pages" folder, and thus that file is rendered when visiting "our-domain/news", we can choose a different file structure:
+pages/news/index.js
+
+- So folders you create in the "pages" folder _also_ act as path segments
+- If we want nested paths, like "news/something-important", we _need_ to use this sub-folder system: pages/news/something-important.js
+  - And from here, we can again choose to do another sub-folder called "something-important" and put an "index.js" in there, rather than "something-important.js" directly in the "news" folder
+
+## Creating Dynamic Pages (with Parameters)
+
+What if we need dynamic pages? For example, different news articles at a URL like "/news/:newsId"?
+
+- We name the file with brackets, with the identifier inside them. So for our news example, we would have: "pages/news/[newsId].js"
+  - This tells NextJS that this is a dynamic page
+
+## Extracting Dynamic Parameter Values
+
+Now how do we extract the concrete value entered into the URL? We use a special React hook that NextJS provides us (or its alternative for Higher Order Components and Class-based Components): `useRouter`
+
+- We import it from NextJS's router sub-folder (which is a sub-package which exposes routing-specific functionality)
+- Regular React hook -- not built into React, but a custom one by the NextJS team
+- We instantiate this hook via a call like `const router = useRouter();`
+  - This will give us methods for programatic navigation, and the values encoded in the URL
+  - Gives us access to a `query` object, which we can then use to access a property with the identifier included in the brackets in our filename
+
+```js
+import { useRouter } from 'next/router';
+
+const router = useRouter();
+console.log(router.query.newsId);
+```
+
+- Note in the above example, console.log shows "undefined" and then whatever we typed into the URL
+- useRouter runs immediately when page is first rendered - doesn't know what's in the URL yet
+- Once we have that information, the component renders again logs the correct value
+
+## Linking Between Pages
+
+Like with pure React apps, we want to avoid linking between pages using anchor tags, as it sends a new HTML page request and causes a page refresh. We would also lose our current state.
+
+In NextJS, we simply replace anchor tags with `Link` elements, and we even keep the href property:
+
+```js
+import Link from 'next/link';
+
+// In render method
+<ul>
+  <li>
+    <Link href='/nextjs-is-a-great-framework'>NextJS Is A Great Framework</Link>
+  </li>
+  <li>
+    <Link href='/is-nextjs-a-great-framework'>
+      Is NextJS A Great Framework?
+    </Link>
+  </li>
+</ul>;
+```
+
+- `Link` component renders an anchor tag, but watches clicks on those anchor tags and if you click there is prevents browser default of sending request. Instead, loads the to-be-loaded component and changes the URL so it _looks_ like the page was changed
+- Highly-interactive and reactive SPA, can manage and store state across pages. Yet if user visits this page as initial pages (by just entering this URL in), can return finished HTML page here. Search engines can see this finished page
+
+## Onwards to a Bigger Project!
+
+With the very core basics of file-based routing done, we will abandon this mini news article project and learn other NextJS concepts with another project.
+
+The project will have a page where we can create "Meet Ups", which will be stored in a database. A page where we fetch and display a list of meet ups. Can visit the details page of a given meet up.
+
+## Preparing the Project Pages
+
+We just create some files in the pages folder here.
+
+## Outputting a List of Meetups
+
+More simple React stuff.
+
+## Adding the New Meetup Form
+
+More boring, pointless stuff that has nothing to do with NextJS.
+
+## The "\_app.js" File & Layout Wrapper
+
+The "\_app.js" file that is automatically created in the "pages" folder is like your _root component_
+
+- It defines a _MyApp_ component
+- Special component that acts as a root component NextJS will render
+- Receives props, pulls a Component and pageProps prop from the props
+  - These props are passed in automatically by NextJS
+  - Component is a prop that holds the page contents that will be rendered. Different whenever we switch a page
+  - pageProps are specific props our pages might be getting
+- We can wrap this Component with our "Layout" component, so it applies to every page we will render
+  - The alternative is we go into each individual page Component and wrap our Layout around each one -- tedious!
+
+## Using Programmatic (Imperative) Navigation
+
+To navigate programmatically, we can again use the `useRouter` hook from `next/router`, like we did with dynamic routes (and its `query` property):
+
+```js
+import { useRouter } from 'next/router';
+
+const router = useRouter();
+
+// In some event handler
+router.push(`/meetups/${meetup.id}`);
+```
+
+## Adding Custom Components & CSS Modules
+
+**Tip:** Keep your page components clean; outsource as much JSX as possible to stand-alone components, and no including CSS files
+
+- NextJS also supports **CSS Modules**
+- Name your css files with the name of the component they style, followed by ".module.css"
+- Now your styles to that component will be scoped to only them. Prevents class name clashing
+
+## How Pre-rendering Works & Which Problem We Face
+
+- The pre-rendered page / HTML that NextJS auto-generates takes the contents found within the _first_ render cycle of a component
+- So if we have a useEffect that fetches data, on first render cycle that data will be empty, and the 2nd render cycle it will have its fetched data
+  - But NextJS uses the HTML of the first cycle for its pre-rendered HTML code, so search engines won't know of our content that we generated using our fetched data (lists, etc)
+
+NextJS has solutions to this problem, though! We can pre-render a page with data that takes time to retrieve...
+
+## Data Fetching for Static Pages
+
+NextJS Page Pre-Rendering
+
+Problem: Pre-rendered page has a snapshot of the Component's first render cycle as its cycle, might be missing crucial async data
+Request -> /some-route -> Return pre-rendered page
+Good for SEO <- Return pre-rendered page -> Hydrate with React code once loaded -> Page / App is interactive
+
+NextJS gives us two forms of pre-rendering:
+
+- Static Generation
+- Server-side Rendering
+
+Static Generation
+
+- NextJS's default behavior
+- Approach you should typically use
+- Component pre-rendered when you _build_ the app for production (with `npm run build script`)
+- Not pre-rendered on the fly on the server, but instead when you build site for production
+- Does not change after deployed
+  - Update data and know the pre-rendered page needs to change? Start build process again, redeploy again
+- For dynamic data, export a special function from within a **Page** component file: `getStaticProps()`
+- Now will call `getStaticProps` before it calls the Component function
+- These props will contain the data this Page needs
+- `getStaticProps` allowed to be async
+- Can execute any code that would normally execute on a server
+  - Any code in here never ends up on the client side, never executes on the client side
+  - This code is executed during the build process -- not on server and especially not on client!
+- **Must** return an object from `getStaticProps`
+  - Typically contains a `props` object within it (this is what your Component's props will be)
+
+Example:
+
+```js
+function Homepage(props) {
+  return <MeetupList meetups={props.meetups}></MeetupList>;
+}
+
+export function getStaticProps() {
+  // Fetch data from an API (here we will pretend our predefined DUMMY_MEETUPS is fetched data)
+
+  return {
+    props: {
+      meetups: DUMMY_MEETUPS,
+    },
+  };
+}
+```
+
+## More on Static Site Generation (SSG)
+
+In the above return of the props object, we can add a `revalidate` property, along with an integer (representing a number in seconds). This will cause the page to be revalidated / re-pre-generated on the server _after_ deployment
+
+## Exploring Server-side Rendering (SSR) with `getServerSideProps`
+
+Sometimes even a regular update (with `revalidate` is not enough) -- we may need to re-generate the page for _every_ incoming request. We want to re-generate dynamically on the server. The alternate to solve to `getStaticProps` for this scenario is `getServerSideProps`
+
+```js
+export async function getServerSideProps(context) {
+  const req = context.req;
+  const res = context.res;
+}
+```
+
+- This function won't run during the build process, instead always on the server after deployment
+- Still returns an object with a props property
+- Any code we write here will always run on the server, never the client
+  - Good place to run operations that use credentials that shouldn't be exposed to users
+- Can't set `revalidate` -- wouldn't make sense or be necessary
+- Can work with the _context_ parameter (you can with `getStaticProps` as well)
+  - Context can retrieve the request and response objects, similar to NodeJS / Express
+    - Unlike with Node and Express, we don't return a response, we return the object with the props still
+
+Which one should we use? Static or Server-Side?
+
+- Serverside-Side
+  - For when we need access to the request object or data changes multiple times every second (where even revalidate won't help)
+  - Disadvantage: Wait for page to be generated on every incoming request
+- GetStaticProps:
+  - Faster, can be cached and re-used instead of re-generated
+  - Better if we don't need access to request object and data doesn't change every few seconds
+
+## Working with Params for SSG Data Fetching
+
+For our MeetingDetailsPage component, we want to convert it to a Static Site Generation. But the contents of this page (information about a specific meetup -- whichever one is in the URL) rely on the URL, which we normally would make use of the `useRouter` prop from NextJS. But we need this information in our `getStaticProps` function, which cannot use React Hooks.
+
+The solution? The `context` argument we can pass into `getStaticProps` provides access to `context.params`!
+
+But now we'll get an error: "getStaticPaths is required for dynamic SSG pages and is missing for "/[meetupId]". What's this about?
+
+## Preparing Paths with "getStaticPaths" & Working with Fallback Pages
+
+`getStaticPaths` is another function NextJS understands
+
+- Need to export in a Page component file if it's a dynamic page and we are using `getStaticProps` (not if using `getServerProps` though, or neither)
+- Since the meetup pages are dynamic, NextJS needs to know for which meetup ID's it needs to pre-generate the pages for (how would it pre-generate otherwise?)
+- Returns and object where we describe all the dynamic values for which the page should be pre-generated
+  - Needs `paths` key (array), which has a `params` key, which is an object of all key/value pairs that might lead to our page
+
+```js
+export async function getSTaticPaths() {
+  return {
+    paths: {
+      params: {
+        meetupId: 'm1',
+      },
+    },
+    params: {
+      meetupId: 'm2',
+    },
+  };
+}
+```
+
+- Note in the above example, we are hard-coding two sets of params. Realistically we would do this dynamically using the values returned by a database query
+
+Running the above, we still get an error -- this time it says: "The 'fallback' key must be returned from getStaticPaths in /[meetupId]"
+
+- The `fallback` property in `getStaticPaths` return object is a boolean representing if our paths array contains all supported parameter values or just some of them
+  - If set to false, you tell NextJS the paths contains all supported meetupID values
+    - If user enters something that isn't supported ("m3") would see 404 error
+  - If set to true, NextJS would try to generate a page for that meetupId dynamically on the server
+- Good for pre-generating _some_ of the pages for specific IDs (like most frequently visited pages) and pre-generate the missing ones dynamically when requests for them are coming in
+
+## Introducing API Routes
+
+Time to add a real backend with a real database! NextJS makes it easy to build a backend API using its **API Routes** feature
+
+- Special pages which don't return HTML code, but are about accepting incoming HTTP requests with JSON data attached to them
+- Allow you to build your own API endpoints as part of your NextJS project
+- Served by same server as your NextJS app
+- Add special "api" folder to your project's "pages" folder -- must be named _api_!
+  - NextJS will pick up any files stored in there and turn those into API routes
+  - Don't define React Components in these files. Instead, define functions which contain server-side code
+  - Never exposed to client, only run on server
+  - Functions are triggered whenever a request is sent to that route (the route determined by the file name)
+
+Example:
+
+```js
+// File: pages/api/new-meetup
+// URL: api/new-meetup
+// POST /api/new-meetup
+
+function handler(req, res) {
+  if (req.method === 'POST') {
+    const data = req.body;
+
+    // Expected data from our New Meetup Form
+    const { title, image, address, description } = data;
+  }
+}
+
+export default handler;
+```
+
+## Working with MongoDB
+
+We will be using MongoDB, with their online Cloud MongoDB Atlas service.
+
+We install the official MongoDB driver: `npm install mongodb`
+
+- Makes sending queries to MongoDB easy
+- Allows us to connect to our MongoDB cluster
+
+```js
+import { MongoClient } from 'mongodb';
+//  URL: api/new-meetup
+
+async function handler(req, res) {
+  if (req.method === 'POST') {
+    const data = req.body;
+
+    // Expected data from our New Meetup Form
+    const { title, image, address, description } = data;
+
+    const client = await MongoClient.connect(
+      'mongodb+srv://Matthew:Heaven87!@cluster0.1ryx5.mongodb.net/meetups?retryWrites=true&w=majority'
+    );
+
+    const db = client.db();
+
+    const meetupsCollection = db.collection('meetups');
+
+    const result = await meetupsCollection.insertOne({
+      title,
+      image,
+      address,
+      description,
+    });
+
+    client.close();
+
+    // Insertion successful, chain on json
+    res.status(201).json({ message: 'Meetup inserted!' });
+  }
+}
+
+export default handler;
+```
+
+## Sending Http Requests to Our API Routes
+
+We can set our client-side [new-meetup] route to look like the following:
+
+```js
+import React from 'react';
+import NewMeetupForm from '../components/meetups/NewMeetupForm';
+import { useRouter } from 'next/router';
+
+function NewMeetupPage() {
+  const router = useRouter();
+
+  const addMeetupHandler = async (enteredMeetupData) => {
+    console.log(enteredMeetupData);
+    // Send request to our API route
+    const response = await fetch('/api/new-meetup', {
+      method: 'POST',
+      body: JSON.stringify(enteredMeetupData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    router.push('/');
+  };
+
+  return <NewMeetupForm onAddMeetup={addMeetupHandler} />;
+}
+
+export default NewMeetupPage;
+```
+
+## Getting Data From the Database
+
+We could fetch our data from the database in a manner similar to how we POST-ed it:
+
+- We could create a file in "pages/api/meetups.js" and define a handler method, which connects to our mongo client, this time sending a "GET" request. We then would go inside of our MeetupsHomepage component, inside the `getStaticProps` method and make a fetch call like: `fetch('/api/meetups')` -- but this is redundant...
+- ...Since our `getStaticProps` method is only called in a server anyways, we can just directly interact with our database here, instead of doing so through a seperate api page file.
+
+Some Notes:
+
+- When you import something in a Page component file, and that something is only used in getServerProps and getStaticProps, that imported package won't be part of the client-side bundle
+  - So we can import MongoClient, and it won't be included in the client bundle! Good for size and security
+
+## Getting Meetup Details Data & Preparing Pages
+
+## Adding "head" Metadata
+
+Before we deploy our app, there's one thing we should always double-check: metadata!
+
+- Description meta tag, which will show up on Google searches
+- Page title
+
+Setting such head elements / meta tags is relatively simple with NextJS -- we import the necessary `Head` from "next/head" and use it as a Component in our page rendering:
+
+```js
+import Head from 'next/head';
+
+return (
+  <React.Fragment>
+    <Head>
+      <title>My React App Title!</title>
+      <meta name='description' content='My description here!' />
+    </Head>
+  </React.Fragment>
+);
+```
+
+## Deploying Next.js Projects
+
+Many hosting providers to use, and many different ways to configure the project. Can use environment variables to hold things like database variables.
+
+We will use Vercel as the provider here. It is the same team that developed NextJS! This makes the deployment process extremely simple.
+
+- We sign up to Vercel with a Git repo provider, like Github (or GitLab or BitBucket)
+- We directly link our Git repo to Vercel, who will get it from that repo and deploy it for you!
+- On Vercel, create new repository -- name it, give it a description, choose whether public or private
+- Then push your code into it via Git (like you would push code to Github)
+  - Go back to your local project, and create a code snapshot (commit): `git add .` then `git commit -m "Ready for deployment!"`
+  - Then push into repo: `git remote add origin <githubLink.git>` and `git push --all`
+- Link this Github (or whatever) repo to Vercel
+  - Select your repo and connect to a Vercel project, name your project, select a framework preset, root directory, environment variables, etc
+  - Hit Deploy!
+  - Vercel will build and deploy it for you; no build commands required!
+
+What does Vercel do for us? Notice in our package.json file we have some "scripts" values. Vercel is running `npm run build` for us. This gives us a ".next" file which contains some optimized files (like pre-generated HTML files). Then `npm start` starts your _production_ server. It should be running on the remote machine that serves as the server for your app.
+
+A few more steps:
+
+- Over on MongoDB Atlas site, under Network Access, we have to "Allow Access from Anywhere". This allows Vercel servers to communicate with our MongoDB database.
+- (Deploy again over on Vercel if you Deployed before setting up Mongo properly)
+
+## Using Fallback Pages & Re-deploying
+
+With our deployed app, if the user adds their own Meetup and then tries to click on the details of that individual one, we get a 404. Why is this? Well, on our HomePage component that displays the list of meetups, in our `getPathProps` we returned an object with `fallback` set to false. Fixing this is simple.
+
+- We set `fallback` to true or -- even better -- "blocking"
+  - Tells NextJS that the list of paths we are defining is not complete -- there might be other valid pages
+  - NextJS will generate these pages on demand now and cache it
+  - Difference between true and blocking:
+    - True immediately returns empty page, and then pull down the dynamically generated content once its done (so have to handle cases where page doesn't have data yet)
+    - Blocking, user sees nothing until page is pre-generated and the finished page will be served
+- Now Redeploy to Vercel:
+  - New snapshot in git, add changes, push changes onto Github
+- Vercel will detect this change our on main brance and building / redeploying
+
+## Summary
+
+- NextJS has more to offer! Ways of optimizing images, easily add authentication, user sign up / out and manage sessions
+- 
 
 # Section 24: Animating React Apps
 
